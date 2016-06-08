@@ -1,6 +1,7 @@
 'use strict'
 
-var _ = require('lodash');
+import _ from 'lodash'
+import SDKEvent from './sdk-event'
 
 function XUI () {}
 
@@ -11,10 +12,10 @@ function _on (event) {
 
   switch (event) {
     case SDKEvent.UIBACK:
-      break;
+      break
     default:
-      console.warn('event: ' + event + 'is not support');
-      break;
+      console.warn('event: ' + event + 'is not support')
+      break
   }
 }
 
@@ -38,11 +39,11 @@ function _getSystemInfo () {
 
 }
 
-XUI.on = _on;
-XUI.scanQCode = _scanQCode;
-XUI.selectImage = _selectImage;
-XUI.setTitleBar = _setTitleBar;
-XUI.setNotify = _setNotify;
-XUI.getSystemInfo = _getSystemInfo;
+XUI.on = _on
+XUI.scanQCode = _scanQCode
+XUI.selectImage = _selectImage
+XUI.setTitleBar = _setTitleBar
+XUI.setNotify = _setNotify
+XUI.getSystemInfo = _getSystemInfo
 
-module.exports = XUI
+export default XUI

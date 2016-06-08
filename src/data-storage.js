@@ -1,6 +1,6 @@
 'use strict'
 
-var _ = require('lodash');
+import _ from 'lodash'
 
 function DataStorage () {
   if (this === DataStorage) {
@@ -97,8 +97,8 @@ function _update (value, collection, query) {
 }
 
 function _delete (collection, query) {
-  if (!(_.isObject(condition))) {
-    throw new Error(condition + ' must be Object type')
+  if (!(_.isObject(query))) {
+    throw new Error(query + ' must be Object type')
   }
 
   if (!(_.isString(collection))) {
@@ -108,12 +108,12 @@ function _delete (collection, query) {
   // 调用容器方法删除数据
 }
 
-DataStorage.get = _get;
-DataStorage.put = _put;
-DataStorage.remove = _remove;
-DataStorage.insert = _insert;
-DataStorage.find = _find;
-DataStorage.update = _update;
-DataStorage.delete = _delete;
+DataStorage.get = _get
+DataStorage.put = _put
+DataStorage.remove = _remove
+DataStorage.insert = _insert
+DataStorage.find = _find
+DataStorage.update = _update
+DataStorage.delete = _delete
 
-module.exports = DataStorage
+export default DataStorage

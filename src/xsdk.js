@@ -1,12 +1,11 @@
 'use strict'
 
-var Device = require('./Device.js');
-var SDKEvent = require('./SDKEvent.js');
-var SDKType = require('./SDKType.js');
-var XUI = require('./XUI.js');
-var DataStorage = require('./DataStorage.js');
-var Promise = require('promise');
-var _ = require('lodash');
+// import Device from './Device.js'
+import SDKEvent from './sdk-event'
+import SDKType from './sdk-type'
+import XUI from './xui'
+import DataStorage from './data-storage'
+import _ from 'lodash'
 
 var sdkInstance = {} // 保存sdk实例，每种类型只保留一个实例
 
@@ -23,7 +22,7 @@ function _login (userId, authorize) {
     throw new Error(authorize + ' must be String type')
   }
 
-  return new Promise (function (resolve, reject) {
+  return new Promise(function (resolve, reject) {
     // 调用容器登陆接口
   })
 }
@@ -51,20 +50,20 @@ function _on (event, fn) {
 
   switch (event) {
     case SDKEvent.READY:
-      break;
+      break
     case SDKEvent.SCAN:
-      break;
+      break
     case SDKEvent.STATUSCHANGE:
-      break;
+      break
     case SDKEvent.ERROR:
-      break;
+      break
     default:
-      console.warn('event: ' + event + 'is not support');
-      break;
+      console.warn('event: ' + event + 'is not support')
+      break
   }
 }
 
-function _emit(event) {
+function _emit (event) {
   if (event === undefined) {
     throw new Error('missing params')
   }
@@ -75,14 +74,14 @@ function _emit(event) {
 
   switch (event) {
     case SDKEvent.STARTSCAN:
-      break;
+      break
     case SDKEvent.CANCELSCAN:
-      break;
+      break
     case SDKEvent.DESTORY:
-      break;
+      break
     default:
-      console.warn('event: ' + event + 'is not support');
-      break;
+      console.warn('event: ' + event + 'is not support')
+      break
   }
 }
 
@@ -97,20 +96,19 @@ function XSDK (type) {
 
   switch (type) {
     case SDKType.WIFI:
-      break;
+      break
     case SDKType.BLUETOOTH:
-      break;
+      break
     default:
       throw new Error(type + ' is not support')
-      break;
   }
 
   if (this instanceof XSDK) {
     if (sdkInstance[type] === undefined) {
-      this.type = type;
-      this.on = _on;
-      this.emit = _emit;
-      this.devices = [];
+      this.type = type
+      this.on = _on
+      this.emit = _emit
+      this.devices = []
 
       sdkInstance[type] = this
     } else {
@@ -119,8 +117,8 @@ function XSDK (type) {
   }
 }
 
-XSDK.login = _login;
-XSDK.getXUI = _getXUI;
-XSDK.getDataStorage = _getDataStorage;
+XSDK.login = _login
+XSDK.getXUI = _getXUI
+XSDK.getDataStorage = _getDataStorage
 
-module.exports = XSDK
+export default XSDK

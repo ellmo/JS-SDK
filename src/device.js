@@ -1,7 +1,7 @@
 'use strict'
 
-var SDKEvent = require('./SDKEvent.js');
-var _ = require('lodash');
+var SDKEvent = require('./SDKEvent.js')
+var _ = require('lodash')
 
 function _on (event, fn) {
   if (!(_.isString(event))) {
@@ -14,18 +14,18 @@ function _on (event, fn) {
 
   switch (event) {
     case SDKEvent.CONNECT:
-      break;
+      break
     case SDKEvent.DISCONNECT:
-      break;
+      break
     case SDKEvent.DATA:
-      break;
+      break
     case SDKEvent.TIMEOUT:
-      break;
+      break
     case SDKEvent.ERROR:
-      break;
+      break
     default:
       console.warn('event: ' + event + 'is not support');
-      break;
+      break
   }
 }
 
@@ -36,15 +36,15 @@ function _emit (event, data) {
 
   switch (event) {
     case SDKEvent.CONNECT:
-      break;
+      break
     case SDKEvent.DISCONNECT:
-      break;
+      break
     case SDKEvent.SENDDATA:
       _sendData(data)
-      break;
+      break
     default:
       console.warn('event: ' + event + 'is not support');
-      break;
+      break
   }
 }
 
@@ -66,8 +66,8 @@ function Device (option) {
       throw new Error(option + ' must be Object type')
     }
 
-    this.on = _on;
-    this.emit = _emit;
+    this.on = _on
+    this.emit = _emit
     // code
   } else {
     return new Device(option)

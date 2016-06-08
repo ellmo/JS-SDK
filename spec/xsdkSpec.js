@@ -1,4 +1,4 @@
-var XSDK = require('../lib/XSDK')
+import XSDK from '../src/xsdk'
 
 describe('XSDK property suite', function () {
   it('XSDK should be function type', function () {
