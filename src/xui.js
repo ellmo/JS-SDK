@@ -1,15 +1,10 @@
 'use strict'
 
-import _ from 'lodash'
 import SDKEvent from './sdk-event'
 
 function XUI () {}
 
 function _on (event) {
-  if (!(_.isString(event))) {
-    throw new Error(event + ' must be String type')
-  }
-
   switch (event) {
     case SDKEvent.UIBACK:
       break

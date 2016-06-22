@@ -1,77 +1,91 @@
 'use strict'
 
-var SDKEvent = require('./SDKEvent.js')
-var _ = require('lodash')
+import SDKEvent from './sdk-event'
+import {functionChect, stringChect} from './util/lang'
 
 function _on (event, fn) {
-  if (!(_.isString(event))) {
-    throw new Error(event + ' must be String type')
-  }
-
-  if (!(_.isFunction(fn))) {
-    throw new Error(fn + ' must be Function type')
-  }
+  stringChect(event)
+  functionChect(fn)
 
   switch (event) {
     case SDKEvent.CONNECT:
+      this._callback[SDKEvent.CONNECT] = fn
       break
     case SDKEvent.DISCONNECT:
+      this._callback[SDKEvent.DISCONNECT] = fn
+      break
+    case SDKEvent.STATUSCHANGE:
+      this._callback[SDKEvent.STATUSCHANGE] = fn
       break
     case SDKEvent.DATA:
-      break
-    case SDKEvent.TIMEOUT:
+      this._callback[SDKEvent.DATA] = fn
       break
     case SDKEvent.ERROR:
+      this._callback[SDKEvent.ERROR] = fn
       break
     default:
-      console.warn('event: ' + event + 'is not support');
+      console.warn('event: ' + event + 'is not support')
       break
   }
+
+  return this
 }
 
 function _emit (event, data) {
-  if (!(_.isString(event))) {
-    throw new Error(event + ' must be String type')
-  }
+  stringChect(event)
+  event === SDKEvent.SENDDATA ? stringChect(data) : null
 
   switch (event) {
     case SDKEvent.CONNECT:
+      this._connect()
       break
     case SDKEvent.DISCONNECT:
+      this._disconnect()
       break
     case SDKEvent.SENDDATA:
-      _sendData(data)
+      this._sendData(data)
       break
     default:
-      console.warn('event: ' + event + 'is not support');
+      console.warn('event: ' + event + 'is not support')
       break
   }
 }
 
-function _sendData (data) {
-  if (data === 'undefined') {
-    throw new Error('can not send empty data')
+function _fire (event, data) {
+  switch (event) {
+    case SDKEvent.CONNECT:
+      this._callback[SDKEvent.CONNECT]()
+      break
+    case SDKEvent.DISCONNECT:
+      this._callback[SDKEvent.DISCONNECT]()
+      break
+    case SDKEvent.DATA:
+      this._callback[SDKEvent.DATA](data)
+      break
+    case SDKEvent.STATUSCHANGE:
+      this._callback[SDKEvent.STATUSCHANGE](data)
+      break
+    case SDKEvent.ERROR:
+      this._callback[SDKEvent.ERROR](data)
+      break
+    default:
+      console.warn(event + 'is not support')
+      break
   }
-
-  if (!(_.isString(data))) {
-    throw new Error(data + ' must be String type')
-  }
-
-  // send Data
 }
 
 function Device (option) {
-  if (this instanceof Device) {
-    if (!(_.isObject(option))) {
-      throw new Error(option + ' must be Object type')
-    }
-
-    this.on = _on
-    this.emit = _emit
-    // code
-  } else {
-    return new Device(option)
+  for (var prop in option) {
+    this['_' + prop] = option[prop]
   }
+  this._callback = {}
 }
 
-module.exports = Device
+Device.prototype._sendData = null
+Device.prototype._connect = null
+Device.prototype._disconnect = null
+Device.prototype._fire = _fire
+Device.prototype.on = _on
+Device.prototype.emit = _emit
+
+export default Device

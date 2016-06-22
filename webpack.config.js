@@ -1,7 +1,8 @@
 var path = require('path')
+
 var projectRoot = path.resolve(__dirname, '')
 module.exports = {
-  entry: './src/xsdk.js',
+  entry: ['babel-polyfill', './src/xsdk.js'],
   output: {
     path: path.resolve(__dirname, './dist'),
     filename: 'xsdk.js',

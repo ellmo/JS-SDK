@@ -6,7 +6,7 @@
   "scripts": {
     "test": "karma start karma.conf.js",
     "dev": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --color",
-    "build": ""
+    "build": "webpack"
   },
   "author": "",
   "license": "ISC",
@@ -34,6 +34,7 @@
     "webpack-dev-server": "^1.14.1"
   },
   "dependencies": {
-    "lodash": "^4.13.1"
+    "lodash": "^4.13.1",
+    "socket.io-client": "^1.4.6"
   }
 }

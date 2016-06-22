@@ -61,27 +61,27 @@ describe('XSDK property suite', function () {
 describe('XSDK instance test suite', function () {
   var sdk;
   beforeEach(function () {
-    sdk = new XSDK('wifi')
-  });
-
-  it('xsdk must has a type', function () {
-    try {
-      new XSDK()
-    } catch (e) {
-      expect(e).toEqual(new Error('missing sdk type'));
-    }
+    sdk = new XSDK('websocket')
   });
 
   it('XSDK must be a Singleton for each type', function () {
-    var sdk1 = new XSDK('wifi');
-    var sdk2 = new XSDK('wifi');
+    var sdk1 = new XSDK('websocket', {
+        type: 'remote',
+        host: 'cm.xlink.cn:23777',
+        appid: ''
+    });
+    var sdk2 = new XSDK('websocket', {
+        type: 'remote',
+        host: 'cm.xlink.cn:23777',
+        appid: ''
+    });
     expect(sdk1).toBe(sdk2)
 
     var sdk3 = new XSDK('bluetooth')
     expect(sdk1).not.toBe(sdk3)
   });
 
-  it("XSDK instance support 'bluetooth' and 'wifi'", function () {
+  it("XSDK instance support 'bluetooth' ,'wifi' and 'websocket'", function () {
     try {
       new XSDK('ABC')
     } catch (e) {
