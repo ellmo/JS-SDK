@@ -4,77 +4,87 @@
   </head>
   <body>
     <div>
-      <button id='bt' disabled="true" onclick="init()" style="margin:50px auto; width:80px; height: 30px; display: block">connect</button>
+      <button id='bt' onclick="init()" style="margin:50px auto; width:80px; height: 30px; display: block">connect</button>
     </div>
     <script src='./socket.io.js'></script>
     <script src='./xsdk.js'></script>
     <script>
-      var XLINKAPPID = '2e0fa2ae97f81600'//云智易微信应用appID ,非微信appID
-      var APIROOT = 'http://wx.xlink.cn'
+      // localStorage.debug = 'engine.io*'
+      var XLINKAPPID = '2e07d2ae97c47e00'//云智易微信应用appID ,非微信appID
+      var APIROOT = 'http://139.196.164.250:8081'
       var user_id = ''
       var devices = []
 
-      function _getSearchCode () {
-        var search = location.search
-        var searchs = {}, strs
-        if (search.indexOf('?') != -1) {
-          search = search.substr(1)
-          strs = search.split('&')
-          for (var i = 0; i < strs.length; i++) {
-            searchs[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
-          }
-        }
-
-        return searchs['code']
-      }
-
-      function $ajax (method, url, callback) {
-        xmlHttp = new XMLHttpRequest()
-        xmlHttp.onreadystatechange = function () {
-          if(xmlHttp.readyState === 4) {
-            if(xmlHttp.status === 200) {
-              callback(xmlHttp.responseText)
-            }
-          }
-        }
-
-        xmlHttp.open(method, url, true)
-        xmlHttp.send()
-      }
-
-      var code = _getSearchCode()
-
-      var openIdUrl = APIROOT + '/v2/wechat_gateway/' + XLINKAPPID + '/get_open_id?code=' + code
-      $ajax('GET', openIdUrl, function (response) {
-        resObj = JSON.parse(response)
-        user_id = resObj['user_id']
-        document.getElementById('bt').disabled = false
-        var devicesUrl = APIROOT + '/v2/wechat_gateway/' + XLINKAPPID + '/wx_device_list?access_token=XLINKUserAccessToken&open_id=' + resObj.open_id
-        $ajax('GET', devicesUrl, function (response) {
-          resObj = JSON.parse(response)
-          resObj.devices.forEach(function (item) {
-            var device = {
-              deviceid: item.device_id,
-              user_id: user_id,
-              token: user_id
-            }
-            devices.push(device)
-          })
-        })
-      })
+      // function _getSearchCode () {
+      //   var search = location.search
+      //   var searchs = {}, strs
+      //   if (search.indexOf('?') != -1) {
+      //     search = search.substr(1)
+      //     strs = search.split('&')
+      //     for (var i = 0; i < strs.length; i++) {
+      //       searchs[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+      //     }
+      //   }
+      //
+      //   return searchs['code']
+      // }
+      //
+      // function $ajax (method, url, callback) {
+      //   xmlHttp = new XMLHttpRequest()
+      //   xmlHttp.onreadystatechange = function () {
+      //     if(xmlHttp.readyState === 4) {
+      //       if(xmlHttp.status === 200) {
+      //         callback(xmlHttp.responseText)
+      //       }
+      //     }
+      //   }
+      //
+      //   xmlHttp.open(method, url, true)
+      //   xmlHttp.send()
+      // }
+      //
+      // var code = _getSearchCode()
+      //
+      // var openIdUrl = APIROOT + '/v2/wechat_gateway/' + XLINKAPPID + '/get_open_id?code=' + code
+      // $ajax('GET', openIdUrl, function (response) {
+      //   resObj = JSON.parse(response)
+      //   user_id = resObj['user_id']
+      //   document.getElementById('bt').disabled = false
+      //   var devicesUrl = APIROOT + '/v2/wechat_gateway/' + XLINKAPPID + '/wx_device_list?access_token=XLINKUserAccessToken&open_id=' + resObj.open_id
+      //   $ajax('GET', devicesUrl, function (response) {
+      //     resObj = JSON.parse(response)
+      //     resObj.devices.forEach(function (item) {
+      //       var device = {
+      //         deviceid: item.device_id,
+      //         user_id: user_id,
+      //         token: user_id
+      //       }
+      //       devices.push(device)
+      //     })
+      //   })
+      // })
 
       function init () {
         var wc = new XSDK('websocket', {
             type: 'remote',
-            host: 'http://cm.xlink.cn:23777',
-            appid: user_id
+            host: 'http://42.121.122.23:23775',
+            appid: '1153087813'
         })
 
         console.log(wc)
 
+        var feignDevices = [{
+          deviceid: '1725038851',
+          user_id: '1153087813',
+          token: '1153087813'
+        },{
+          deviceid: '1725034861',
+          user_id: '1153087813',
+          token: '1153087813'
+        }]
         wc.on('ready', function () {
           console.log('xsdk is ready')
-          wc.emit('adddevices', devices)
+          wc.emit('adddevices', feignDevices)
         }).on('statuschange', function (status) {
           console.log('statuschange status = ' + status)
         }).on('devicesready', function (devices) {

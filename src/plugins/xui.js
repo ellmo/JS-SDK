@@ -1,8 +1,19 @@
 'use strict'
 
-import SDKEvent from './sdk-event'
+import {SDKEvent} from '../enum'
 
-function XUI () {}
+var _xui = {
+  on: _on,
+  scanQCode: _scanQCode,
+  selectImage: _selectImage,
+  setTitleBar: _setTitleBar,
+  setNotify: _setNotify,
+  getSystemInfo: _getSystemInfo
+}
+
+function getXUI () {
+  return _xui
+}
 
 function _on (event) {
   switch (event) {
@@ -34,11 +45,4 @@ function _getSystemInfo () {
 
 }
 
-XUI.on = _on
-XUI.scanQCode = _scanQCode
-XUI.selectImage = _selectImage
-XUI.setTitleBar = _setTitleBar
-XUI.setNotify = _setNotify
-XUI.getSystemInfo = _getSystemInfo
-
-export default XUI
+export default getXUI

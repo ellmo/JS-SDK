@@ -1,36 +1,22 @@
 'use strict'
 
-// import Device from './Device.js'
-// import SDKEvent from './sdk-event'
-import SDKType from './sdk-type'
-import XUI from './xui'
-import DataStorage from './data-storage'
+import {SDKType} from './enum'
+import getXUI from './plugins/xui'
+import getDataStorage from './plugins/data-storage'
 import initWebsocket from './instance/websocket'
-import {stringChect, objectChect} from './util/lang'
+import {isString, isPlainObject} from './util/lang'
 
 var sdkInstance = {} // 保存sdk实例，每种类型只保留一个实例
 
-function _login (userId, authorize) {
-  stringChect(userId)
-  stringChect(authorize)
-
-  return new Promise(function (resolve, reject) {
-    // 调用容器登陆接口
-  })
-}
-
-function _getXUI () {
-  return XUI
-}
-
-function _getDataStorage () {
-  return DataStorage
-}
-
 function XSDK (type, option) {
-  stringChect(type)
-
-  type === SDKType.WEBSOCKET ? objectChect(option) : null
+  if (!isString(type)) {
+    throw new TypeError('error params')
+  }
+  if (type === SDKType.WEBSOCKET) { // 发送数据时，数据项不能为空
+    if (!isPlainObject(option)) {
+      throw new TypeError('error params')
+    }
+  }
 
   if (this instanceof XSDK) {
     if (sdkInstance[type] === undefined) {
@@ -55,9 +41,8 @@ function XSDK (type, option) {
   }
 }
 
-XSDK.login = _login
-XSDK.getXUI = _getXUI
-XSDK.getDataStorage = _getDataStorage
+XSDK.getXUI = getXUI
+XSDK.getDataStorage = getDataStorage
 
 window.XSDK = XSDK
 

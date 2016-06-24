@@ -1,7 +1,6 @@
-import SDKEvent from '../sdk-event'
-import SDKState from '../sdk-state'
+import {SDKStatus, SDKEvent} from '../enum'
 import Device from '../device'
-import {functionChect, stringChect, objectOrArrayChect} from '../util/lang'
+import {isFunction, isString, isPlainObject, isArray} from '../util/lang'
 
 function initWebsocket (xsdk, option) {
   if (!option.host) {
@@ -29,15 +28,15 @@ function _initSocketIO (sdk, option) {
 
   // 注册socket的状态的监听事件
   _socket.on('connect', function () {
-    sdk._status = SDKState.CONNECT
+    sdk._status = SDKStatus.CONNECT
   }).on('reconnect', function () {
-    sdk._status = SDKState.CONNECT
+    sdk._status = SDKStatus.CONNECT
   }).on('disconnect', function () {
-    sdk._status = SDKState.DISCONNECT
+    sdk._status = SDKStatus.DISCONNECT
   }).on('reconnect_attempt', function () {
-    sdk._status = SDKState.CONNECTTING
+    sdk._status = SDKStatus.CONNECTTING
   }).on('reconnecting', function () {
-    sdk._status = SDKState.CONNECTTING
+    sdk._status = SDKStatus.CONNECTTING
   }).on('reconnect_error', function (error) {
     _fire(sdk, SDKEvent.ERROR, error)
   }).on('reconnect_failed', function () {
@@ -63,7 +62,7 @@ function _initState (sdk) {
         return
       }
 
-      if (status === SDKState.CONNECT && !sdk._isReady) {
+      if (status === SDKStatus.CONNECT && !sdk._isReady) {
         _fire(sdk, SDKEvent.READY)
         sdk._isReady = true // 自动重连不触发sdk ready时间。sdk的ready只触发一次
       }
@@ -77,9 +76,10 @@ function _initState (sdk) {
     configurable: false
   })
 
-  sdk.status = SDKState.DISCONNECT
+  sdk.status = SDKStatus.DISCONNECT
 }
 
+// 分发socket状态和数据
 function _fire (sdk, event, params) {
   switch (event) {
     case SDKEvent.READY:
@@ -107,9 +107,11 @@ function _fire (sdk, event, params) {
   }
 }
 
+// 监听sdk事件
 function _on (event, callback) {
-  stringChect(event)
-  functionChect(callback)
+  if (!(isString(event) && isFunction(callback))) {
+    throw new TypeError('error params')
+  }
 
   switch (event) {
     case SDKEvent.READY:
@@ -132,9 +134,24 @@ function _on (event, callback) {
   return this
 }
 
+// sdk 触发事件
 function _emit (event, params) {
-  stringChect(event)
-  objectOrArrayChect(params)
+  if (!isString(event)) {
+    throw new TypeError('error params')
+  }
+  if (event === SDKEvent.ADDDEVICES) { // 添加设备时，数据项不能为空
+    if (isArray(params)) {
+      params.forEach(function (item) {
+        if (!isPlainObject(item)) {
+          throw new TypeError('error params')
+        }
+      })
+    } else {
+      if (!isPlainObject(params)) {
+        throw new TypeError('error params')
+      }
+    }
+  }
 
   switch (event) {
     case SDKEvent.DESTORY:
@@ -149,6 +166,7 @@ function _emit (event, params) {
   }
 }
 
+// 向sdk添加数据
 function _addDevices (params) {
   var self = this
   _deviceImp(Device)
@@ -182,24 +200,25 @@ function _deviceImp (Device) {
 
 // 设备发送数据
 function _sendData (data) {
-  stringChect(data)
-
-  this._socket.emit('device.senddata', data, function (data) {
-    console.log(data)
-  })
+  this._socket.emit('device.senddata', data)
 }
 
 // 连接设备
 function _connect () {
+  var self = this
   var params = {
     deviceid: this._id,
     appid: this._user_id,
     token: this._token
   }
 
-  this._socket.emit('device.connect', params, function () {
-    this._fire(SDKEvent.CONNECT)
-  }.bind(this))
+  this._socket.emit('device.connect', params, function (data) {
+    if (data.status === 200) {
+      self._fire(SDKEvent.CONNECT)
+    } else if (data.status === 203) {
+      console.log('device is offline')
+    }
+  })
 }
 
 // 断开设备

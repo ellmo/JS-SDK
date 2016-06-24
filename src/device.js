@@ -1,27 +1,28 @@
 'use strict'
 
-import SDKEvent from './sdk-event'
-import {functionChect, stringChect} from './util/lang'
+import {SDKEvent} from './enum'
+import {isFunction, isString} from './util/lang'
 
-function _on (event, fn) {
-  stringChect(event)
-  functionChect(fn)
+function _on (event, calback) {
+  if (!(isString(event) && isFunction(calback))) {
+    throw new TypeError('error params')
+  }
 
   switch (event) {
     case SDKEvent.CONNECT:
-      this._callback[SDKEvent.CONNECT] = fn
+      this._callback[SDKEvent.CONNECT] = calback
       break
     case SDKEvent.DISCONNECT:
-      this._callback[SDKEvent.DISCONNECT] = fn
+      this._callback[SDKEvent.DISCONNECT] = calback
       break
     case SDKEvent.STATUSCHANGE:
-      this._callback[SDKEvent.STATUSCHANGE] = fn
+      this._callback[SDKEvent.STATUSCHANGE] = calback
       break
     case SDKEvent.DATA:
-      this._callback[SDKEvent.DATA] = fn
+      this._callback[SDKEvent.DATA] = calback
       break
     case SDKEvent.ERROR:
-      this._callback[SDKEvent.ERROR] = fn
+      this._callback[SDKEvent.ERROR] = calback
       break
     default:
       console.warn('event: ' + event + 'is not support')
@@ -32,18 +33,30 @@ function _on (event, fn) {
 }
 
 function _emit (event, data) {
-  stringChect(event)
-  event === SDKEvent.SENDDATA ? stringChect(data) : null
+  if (!isString(event)) {
+    throw new TypeError('error params')
+  }
+  if (event === SDKEvent.SENDDATA) { // 发送数据时，数据项不能为空
+    if (!isString(data)) {
+      throw new TypeError('error params')
+    }
+  }
 
   switch (event) {
     case SDKEvent.CONNECT:
-      this._connect()
+      if (this._connect) {
+        this._connect()
+      }
       break
     case SDKEvent.DISCONNECT:
-      this._disconnect()
+      if (this._disconnect) {
+        this._disconnect()
+      }
       break
     case SDKEvent.SENDDATA:
-      this._sendData(data)
+      if (this._sendData) {
+        this._sendData(data)
+      }
       break
     default:
       console.warn('event: ' + event + 'is not support')

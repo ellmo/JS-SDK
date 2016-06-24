@@ -1,9 +1,17 @@
 'use strict'
 
-function DataStorage () {
-  if (this === DataStorage) {
-    return DataStorage
-  }
+var _dataStorage = {
+  get: _get,
+  put: _put,
+  remove: _remove,
+  insert: _insert,
+  find: _find,
+  update: _update,
+  delete: _delete
+}
+
+function getDataStorage () {
+  return _dataStorage
 }
 
 function _get (key, table) {
@@ -46,12 +54,4 @@ function _delete (collection, query) {
   // 调用容器方法删除数据
 }
 
-DataStorage.get = _get
-DataStorage.put = _put
-DataStorage.remove = _remove
-DataStorage.insert = _insert
-DataStorage.find = _find
-DataStorage.update = _update
-DataStorage.delete = _delete
-
-export default DataStorage
+export default getDataStorage
