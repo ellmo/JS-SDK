@@ -1,6 +1,6 @@
 'use strict'
 
-import {SDKEvent} from './enum'
+import {deviceEvent} from './enum'
 import {isFunction, isString} from './util/lang'
 
 function _on (event, calback) {
@@ -9,20 +9,20 @@ function _on (event, calback) {
   }
 
   switch (event) {
-    case SDKEvent.CONNECT:
-      this._callback[SDKEvent.CONNECT] = calback
+    case deviceEvent.CONNECT:
+      this._callback[deviceEvent.CONNECT] = calback
       break
-    case SDKEvent.DISCONNECT:
-      this._callback[SDKEvent.DISCONNECT] = calback
+    case deviceEvent.DISCONNECT:
+      this._callback[deviceEvent.DISCONNECT] = calback
       break
-    case SDKEvent.STATUSCHANGE:
-      this._callback[SDKEvent.STATUSCHANGE] = calback
+    case deviceEvent.STATUSCHANGE:
+      this._callback[deviceEvent.STATUSCHANGE] = calback
       break
-    case SDKEvent.DATA:
-      this._callback[SDKEvent.DATA] = calback
+    case deviceEvent.DATA:
+      this._callback[deviceEvent.DATA] = calback
       break
-    case SDKEvent.ERROR:
-      this._callback[SDKEvent.ERROR] = calback
+    case deviceEvent.ERROR:
+      this._callback[deviceEvent.ERROR] = calback
       break
     default:
       console.warn('event: ' + event + 'is not support')
@@ -36,24 +36,24 @@ function _emit (event, data) {
   if (!isString(event)) {
     throw new TypeError('error params')
   }
-  if (event === SDKEvent.SENDDATA) { // 发送数据时，数据项不能为空
+  if (event === deviceEvent.SENDDATA) { // 发送数据时，数据项不能为空
     if (!isString(data)) {
       throw new TypeError('error params')
     }
   }
 
   switch (event) {
-    case SDKEvent.CONNECT:
+    case deviceEvent.CONNECT:
       if (this._connect) {
         this._connect()
       }
       break
-    case SDKEvent.DISCONNECT:
+    case deviceEvent.DISCONNECT:
       if (this._disconnect) {
         this._disconnect()
       }
       break
-    case SDKEvent.SENDDATA:
+    case deviceEvent.SENDDATA:
       if (this._sendData) {
         this._sendData(data)
       }
@@ -66,20 +66,20 @@ function _emit (event, data) {
 
 function _fire (event, data) {
   switch (event) {
-    case SDKEvent.CONNECT:
-      this._callback[SDKEvent.CONNECT]()
+    case deviceEvent.CONNECT:
+      this._callback[deviceEvent.CONNECT]()
       break
-    case SDKEvent.DISCONNECT:
-      this._callback[SDKEvent.DISCONNECT]()
+    case deviceEvent.DISCONNECT:
+      this._callback[deviceEvent.DISCONNECT]()
       break
-    case SDKEvent.DATA:
-      this._callback[SDKEvent.DATA](data)
+    case deviceEvent.DATA:
+      this._callback[deviceEvent.DATA](data)
       break
-    case SDKEvent.STATUSCHANGE:
-      this._callback[SDKEvent.STATUSCHANGE](data)
+    case deviceEvent.STATUSCHANGE:
+      this._callback[deviceEvent.STATUSCHANGE](data)
       break
-    case SDKEvent.ERROR:
-      this._callback[SDKEvent.ERROR](data)
+    case deviceEvent.ERROR:
+      this._callback[deviceEvent.ERROR](data)
       break
     default:
       console.warn(event + 'is not support')
@@ -89,7 +89,7 @@ function _fire (event, data) {
 
 function Device (option) {
   for (var prop in option) {
-    this['_' + prop] = option[prop]
+    this[prop] = option[prop]
   }
   this._callback = {}
 }

@@ -9,29 +9,30 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'spec/xsdkspec.js'
+      'spec/index.js'
     ],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-       'spec/xsdkspec.js': ['webpack']
+       'spec/index.js': ['webpack', 'sourcemap']
 	  },
 
     webpack: {
-      entry: './spec/xsdkspec.js',
+      entry: './spec/index.js',
       module: {
         loaders: [
           {
             test: /\.js$/,
     		    loader: "babel",
             exclude: "node_modules",
-        		query: {
-        			presets: ['es2015']
-        		}
+            query: {
+              presets: ['es2015']
+            }
           }
         ]
-      }
+      },
+      devtool: 'source-map'
     },
 
     // test results reporter to use

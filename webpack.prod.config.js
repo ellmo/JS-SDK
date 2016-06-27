@@ -6,7 +6,7 @@ module.exports = {
   entry: './src/xsdk.js',
   output: {
     path: path.resolve(__dirname, './dist'),
-    filename: 'xsdk.js',
+    filename: 'xsdk.min.js',
   },
   resolve: {
     extensions: ['', '.js']
@@ -31,5 +31,12 @@ module.exports = {
   },
   eslint: {
     formatter: require('eslint-friendly-formatter')
-  }
+  },
+  plugins: [
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false
+      }
+    }),
+  ]
 }

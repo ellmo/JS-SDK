@@ -6,10 +6,10 @@
     <div>
       <button id='bt' onclick="init()" style="margin:50px auto; width:80px; height: 30px; display: block">connect</button>
     </div>
-    <script src='./socket.io.js'></script>
+    <!-- <script src='./socket.io.js'></script> -->
     <script src='./xsdk.js'></script>
     <script>
-      // localStorage.debug = 'engine.io*'
+      localStorage.debug = 'xsdk*'
       var XLINKAPPID = '2e07d2ae97c47e00'//云智易微信应用appID ,非微信appID
       var APIROOT = 'http://139.196.164.250:8081'
       var user_id = ''
@@ -68,18 +68,18 @@
         var wc = new XSDK('websocket', {
             type: 'remote',
             host: 'http://42.121.122.23:23775',
-            appid: '1153087813'
+            userid: '1153087813'
         })
 
         console.log(wc)
 
         var feignDevices = [{
           deviceid: '1725038851',
-          user_id: '1153087813',
+          userid: '1153087813',
           token: '1153087813'
         },{
           deviceid: '1725034861',
-          user_id: '1153087813',
+          userid: '1153087813',
           token: '1153087813'
         }]
         wc.on('ready', function () {
@@ -90,7 +90,7 @@
         }).on('devicesready', function (devices) {
           devices.forEach(function (device) {
             device.emit('connect')
-            device.on('connect', function () {
+            device.on('connect', function () { // connect事件触发表示当前设备实例连接上了云智易服务器。
               console.log('device connected')
               device.emit('senddata', '28susjka8sskkakkasls')
             })
@@ -102,6 +102,11 @@
             })
             .on('statuschange', function (status) {
               console.log('device status is ' + status)
+              if (status === 1) {
+                console.log('devices is online')
+              } else {
+                console.log('devices is offline')
+              }
             })
             .on('error', function (error) {
               console.log(data)

@@ -1,6 +1,10 @@
-import {SDKStatus, SDKEvent} from '../enum'
+import io from 'socket.io-client'
+import {SDKStatus, SDKEvent, deviceEvent, deviceStatus} from '../enum'
 import Device from '../device'
 import {isFunction, isString, isPlainObject, isArray} from '../util/lang'
+import debug from 'debug'
+
+var log = debug('xsdk-websocket')
 
 function initWebsocket (xsdk, option) {
   if (!option.host) {
@@ -18,13 +22,19 @@ function initWebsocket (xsdk, option) {
 }
 
 function _initSocketIO (sdk, option) {
-  if (!window.io) {
+  log('init socket-io')
+  // option 参数结构:
+  // {
+  //   type: 'remote', //固定为remote 暂时未处理该参数
+  //   host: 'url',
+  //   userid: '' // 通过云智易restful接口获取，暂时未处理该参数
+  // }
+
+  if (!io) {
     throw new Error('socket.io do not exsit')
   }
 
-  /* eslint-disable */
-  var _socket = window.io(option.host)
-  /* eslint-enable */
+  var _socket = io(option.host)
 
   // 注册socket的状态的监听事件
   _socket.on('connect', function () {
@@ -184,9 +194,9 @@ function _addDevices (params) {
 function _createDevice (param) {
   var option = {
     id: param.deviceid,
-    user_id: param.user_id,
+    userid: param.userid,
     token: param.token,
-    socket: this._socket
+    _socket: this._socket
   }
   this.devices.push(new Device(option))
 }
@@ -207,35 +217,36 @@ function _sendData (data) {
 function _connect () {
   var self = this
   var params = {
-    deviceid: this._id,
-    appid: this._user_id,
-    token: this._token
+    deviceid: this.id,
+    appid: this.userid,
+    token: this.token
   }
 
   this._socket.emit('device.connect', params, function (data) {
     if (data.status === 200) {
-      self._fire(SDKEvent.CONNECT)
-    } else if (data.status === 203) {
-      console.log('device is offline')
+      self._fire(deviceEvent.STATUSCHANGE, deviceStatus.INLINE)
+    } else if (data.status === 202) {
+      self._fire(deviceEvent.STATUSCHANGE, deviceStatus.OFFLINE)
     }
+    self._fire(deviceEvent.CONNECT)
   })
 }
 
 // 断开设备
 function _disconnect () {
   var params = {
-    deviceid: this._id,
+    deviceid: this.id,
     data: ''
   }
   this._socket.emit('device.disconnect', params, function () {
-    this._fire(SDKEvent.DISCONNECT)
+    this._fire(deviceEvent.DISCONNECT)
   })
 }
 
 // 分发设备数据
 function _dispatchDeviceData (devices, data) {
   var device = devices.find(function (item) {
-    return item._id === data.deviceid.toString()
+    return item.id === data.deviceid.toString()
   })
 
   if (device) {
@@ -243,18 +254,18 @@ function _dispatchDeviceData (devices, data) {
       data: data.data,
       type: data.type
     }
-    device._fire(SDKEvent.DATA, params)
+    device._fire(deviceEvent.DATA, params)
   }
 }
 
 // 分发设备状态
 function _dispatchDeviceStatus (devices, status) {
   var device = devices.find(function (item) {
-    return item._id === status.deviceid.toString()
+    return item.id === status.deviceid.toString()
   })
 
   if (device) {
-    device._fire(SDKEvent.STATUSCHANGE, status.state)
+    device._fire(deviceEvent.STATUSCHANGE, status.state)
   }
 }
 
