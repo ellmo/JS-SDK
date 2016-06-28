@@ -3,9 +3,9 @@ var webpack = require('webpack')
 
 var projectRoot = path.resolve(__dirname, '')
 module.exports = {
-  entry: './src/xsdk.js',
+  entry: './lib/xsdk.js',
   output: {
-    path: path.resolve(__dirname, './dist'),
+    path: path.resolve(__dirname, './'),
     filename: 'xsdk.min.js',
   },
   resolve: {

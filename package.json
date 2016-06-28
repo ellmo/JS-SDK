@@ -2,7 +2,7 @@
   "name": "xlink-jssdk",
   "version": "1.0.0",
   "description": "js sdk for h5 developer to connect xlink server",
-  "main": "index.js",
+  "main": "lib/xsdk.js",
   "scripts": {
     "test": "karma start karma.conf.js",
     "dev": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --color",
