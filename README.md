@@ -1,8 +1,5 @@
 # xlink jssdk
 
-标签（空格分隔）： xlink js sdk h5 微信
-
----
 jssdk面向智能硬件的H5应用开发者，通过xlink jssdk接入云智易物联平台。支持WIFI、蓝牙和微信应用开发.
 
 
@@ -39,4 +36,4 @@ sdk.emit('startscan') // sdk扫描设备
 device.emit('connect') // 建立设备连接
 ```
 
-**详细信息请参考 [API 文档](./xlink-jssdk-document.md)**
+**详细信息请参考 [API 文档](./xink-jssdk-document.md)**
