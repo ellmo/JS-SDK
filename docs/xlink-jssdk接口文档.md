@@ -95,7 +95,7 @@ ws.on('ready', function () {
     ws.emit('adddevices', _devices) //_devices 表示用户绑定设备列表
 })
 .on('devicesready', function (devices) {
-    // devices 表示扫描出的的设备数组
+    // devices 表示设备对象数组
     devices.forEach(function (item) {
         // 连接设备
         item.emit('connect')
@@ -202,7 +202,7 @@ Device类表示设备。每一个Device实例根据设备id(device_id)唯一标�
 | String | id | 设备id |
 | Number | status | 设备状态 0表示离线 1表示在线 |
 
-### 方法
+### 实例方法
 | 方法 | 描述 |
 | --- | --- |
 | [emit(String event[, String data])](#deviceemit) | 触发事件 |
@@ -218,7 +218,7 @@ Device类表示设备。每一个Device实例根据设备id(device_id)唯一标�
 ####<a name = 'deviceon'>on参数</a>
 | 参数 | 类型 | 是否必须 | 描述 |
 | --- | --- | --- | --- |
-| event | String | 是 | 支持的发送事件有 ['connect'](#CONNECT) ['disconnect'](#DISCONNECT) ['data'](#DATA) ['error'](#ERROR)|
+| event | String | 是 | 支持的监听事件有 ['connect'](#CONNECT) ['disconnect'](#DISCONNECT) ['data'](#DATA) ['error'](#ERROR)|
 | cb | Function | 是 | 回调函数 |
 
 
@@ -231,7 +231,7 @@ Device类表示设备。每一个Device实例根据设备id(device_id)唯一标�
 | --- | --- |
 | <a name='CONNECT'>connect</a> | 连接设备 |
 | <a name='DISCONNECT'>disconnect</a> | 断开设备连接 |
-| <a name='SETDATAPOINT'>setdatapoint</a> | 设置设备datapoint |
+| <a name='SETDATAPOINT'>setdatapoint</a> | 设置设备[数据端点](#datapoint) |
 | <a name='DATA'>data</a> | 设备数据更新，事件触发时会将设备数据传入回调函数 |
 | <a name='SUBSCRIBE'>subscribe</a> | 订阅设备 |
 | <a name='UNSUBSCRIBE'>unsubscribe</a> | 取消订阅设备 |
@@ -296,3 +296,4 @@ $ weinre --boundHost -all- --httpPort 8081 --reuseAddr true --readTimeout 1 --de
 | 名词 | 解释 |
 | --- | --- |
 |<a name="container">容器| 在混合应用程序(hybird app)中 ，开发人员可以把HTML5应用程序嵌入到一个细薄的原生容器里面，容器即是一个简单的native app |
+|<a name="datapoint">数据端点| 数据端点指产品的属性，APP可以通过获取和修改设备数据端点的值来进行控制设备.云平台可以根据维护的数据端点来处理数据统计、消息推送服务 |

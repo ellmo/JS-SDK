@@ -4,83 +4,66 @@
   </head>
   <body>
     <div>
-      <button id='bt' onclick="init()" style="margin:50px auto; width:200px; height: 50px; display: block">connect</button>
+      <button id='bt' onclick="init()" style="font-size:30px; margin:10% 40% auto 40%; width:20%; height: 50px; display: block">connect</button>
     </div>
     <script src='../xsdk.js'></script>
     <script>
-      var XLINKAPPID = '2e07d2ae97c47e00'//云智易微信应用appID ,非微信appID
-      var APIROOT = 'http://139.196.164.250:8081'
+      var XLINKAPPID = '2e0fa2ae97f81600'//云智易微信应用appID ,非微信appID
+      var APIROOT = 'http://wx.xlink.cn' // RESTful接口域名
       var user_id = ''
       var devices = []
 
-      // function _getSearchCode () {
-      //   var search = location.search
-      //   var searchs = {}, strs
-      //   if (search.indexOf('?') != -1) {
-      //     search = search.substr(1)
-      //     strs = search.split('&')
-      //     for (var i = 0; i < strs.length; i++) {
-      //       searchs[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
-      //     }
-      //   }
-      //
-      //   return searchs['code']
-      // }
-      //
-      // function $ajax (method, url, callback) {
-      //   xmlHttp = new XMLHttpRequest()
-      //   xmlHttp.onreadystatechange = function () {
-      //     if(xmlHttp.readyState === 4) {
-      //       if(xmlHttp.status === 200) {
-      //         callback(xmlHttp.responseText)
-      //       }
-      //     }
-      //   }
-      //
-      //   xmlHttp.open(method, url, true)
-      //   xmlHttp.send()
-      // }
-      //
-      // var code = _getSearchCode()
-      //
-      // var openIdUrl = APIROOT + '/v2/wechat_gateway/' + XLINKAPPID + '/get_open_id?code=' + code
-      // $ajax('GET', openIdUrl, function (response) {
-      //   resObj = JSON.parse(response)
-      //   user_id = resObj['user_id']
-      //   document.getElementById('bt').disabled = false
-      //   var devicesUrl = APIROOT + '/v2/wechat_gateway/' + XLINKAPPID + '/wx_device_list?access_token=XLINKUserAccessToken&open_id=' + resObj.open_id
-      //   $ajax('GET', devicesUrl, function (response) {
-      //     resObj = JSON.parse(response)
-      //     resObj.devices.forEach(function (item) {
-      //       var device = {
-      //         deviceid: item.device_id,
-      //         user_id: user_id,
-      //         token: user_id
-      //       }
-      //       devices.push(device)
-      //     })
-      //   })
-      // })
+      var code = _getSearchCode()
+      getOpenId()
 
-      var feignDevices = [{  // 测试数据
-        deviceid: '1725038851',
-        userid: '1153087813',
-        token: '1153087813'
-      },{
-        deviceid: '1725034861',
-        userid: '1153087813',
-        token: '1153087813'
-      }]
+      function _getSearchCode () { // 获取url上的code参数
+        var search = location.search
+        var searchs = {}, strs
+        if (search.indexOf('?') != -1) {
+          search = search.substr(1)
+          strs = search.split('&')
+          for (var i = 0; i < strs.length; i++) {
+            searchs[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+          }
+        }
+
+        return searchs['code']
+      }
+
+      function getOpenId () {
+        var openIdUrl = APIROOT + '/v2/wechat_gateway/' + XLINKAPPID + '/get_open_id?code=' + code
+        ajax('GET', openIdUrl, function (response) {
+          resObj = JSON.parse(response)
+          user_id = resObj['user_id']
+          document.getElementById('bt').disabled = false
+          getDevices(resObj.open_id)
+        })
+      }
+
+      function getDevices(openid) {
+        var devicesUrl = APIROOT + '/v2/wechat_gateway/' + XLINKAPPID + '/wx_device_list?access_token=XLINKUserAccessToken&open_id=' + openid //access_token 字段未实现，无需处理
+        ajax('GET', devicesUrl, function (response) {
+          resObj = JSON.parse(response)
+          resObj.devices.forEach(function (item) {
+            var device = {
+              deviceid: item.device_id,
+              userid: user_id,
+              token: '' // 即access_token 字段未实现，无需处理
+            }
+            devices.push(device)
+          })
+        })
+      }
 
       function init () {
         var wc = new XSDK('websocket', {
             type: 'remote',
-            host: 'http://42.121.122.23:23775',
+            host: 'http://cm.xlink.cn:23777',
             userid: '1153087813'
         })
 
         wc.on('ready', function () {
-          wc.emit('adddevices', feignDevices)
+          wc.emit('adddevices', devices)
         }).on('statuschange', function (status) {
           console.log('sdk statuschange status = ' + status)
         }).on('devicesready', function (devices) {
@@ -97,10 +80,25 @@
             .on('statuschange', function (status) { // status=1 表示设备在线，status=0表示设备离线
               if (status === 1) { // 设备在线，可以发动数据控制设备
                 device.emit('senddata', 'QWER')
+              } else {
+                console.log('device' + device.id + ' is offline')
               }
             })
           })
         })
+      }
+
+      function ajax (method, url, callback) {
+        var xmlHttp = new XMLHttpRequest()
+        xmlHttp.onreadystatechange = function () {
+          if(xmlHttp.readyState === 4) {
+            if(xmlHttp.status === 200) {
+              callback(xmlHttp.responseText)
+            }
+          }
+        }
+        xmlHttp.open(method, url, true)
+        xmlHttp.send()
       }
     </script>
   </body>
