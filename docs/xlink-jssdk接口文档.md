@@ -49,9 +49,6 @@ bt.on('ready', function () {
         })
     })
 })
-.on('timeout', function (msg) {
-    // msg 表示超时的描述
-})
 .on('error', function (error) {
     // error 表示错误信息描述
 })
@@ -68,9 +65,10 @@ bt.on('ready', function () {
 
 ![图1.4](./resource/image/jssdk-wechat.png)
 
- 1. [通过微信OAuth 2.0接口获取用户认证Code](http://example)
- 2. [获取用户OpenID接口](http://example)
- 3. [获取用户绑定设备列表](http://example)
+
+ 1. 通过[微信OAuth 2.0](https://mp.weixin.qq.com/wiki/17/c0f37d5704f0b64713d5d2c37b468d75.html)接口获取用户认证Code
+ 2. 调用[获取用户OpenID接口](./微信智能硬件接入指南.md#get_open_id)，通过Code换取OpenID，同时得到XLINK平台用户ID
+ 3. 调用[获取用户绑定设备列表接口](./微信智能硬件接入指南.md#wx_device_list)
 
 代码示例：
 
@@ -118,9 +116,6 @@ ws.on('ready', function () {
         })
     })
 })
-.on('timeout', function (msg) {
-    // msg 表示超时的描述
-})
 .on('error', function (error) {
     // error 表示错误信息描述
 })
@@ -130,7 +125,8 @@ ws.on('ready', function () {
 ----------
 
 ## <a name='document'>接口文档</a>
-下图是JS SDK的UML类图
+下图是jssdk的UML类图
+
 ![图1.1](./resource/image/xjssdk.png)
 ## <a name='xsdk'>Class XSDK</a>
 JS SDK 在window下暴露了一个全局的XSDK类，根据构造函数参数，返回不同的连接实例，每个连接（蓝牙或者WIFI）维护一个实例。

@@ -4,12 +4,10 @@
   </head>
   <body>
     <div>
-      <button id='bt' onclick="init()" style="margin:50px auto; width:80px; height: 30px; display: block">connect</button>
+      <button id='bt' onclick="init()" style="margin:50px auto; width:200px; height: 50px; display: block">connect</button>
     </div>
-    <!-- <script src='./socket.io.js'></script> -->
-    <script src='./xsdk.js'></script>
+    <script src='../xsdk.js'></script>
     <script>
-      localStorage.debug = 'xsdk*'
       var XLINKAPPID = '2e07d2ae97c47e00'//云智易微信应用appID ,非微信appID
       var APIROOT = 'http://139.196.164.250:8081'
       var user_id = ''
@@ -64,6 +62,16 @@
       //   })
       // })
 
+      var feignDevices = [{  // 测试数据
+        deviceid: '1725038851',
+        userid: '1153087813',
+        token: '1153087813'
+      },{
+        deviceid: '1725034861',
+        userid: '1153087813',
+        token: '1153087813'
+      }]
+
       function init () {
         var wc = new XSDK('websocket', {
             type: 'remote',
@@ -71,28 +79,14 @@
             userid: '1153087813'
         })
 
-        console.log(wc)
-
-        var feignDevices = [{
-          deviceid: '1725038851',
-          userid: '1153087813',
-          token: '1153087813'
-        },{
-          deviceid: '1725034861',
-          userid: '1153087813',
-          token: '1153087813'
-        }]
         wc.on('ready', function () {
-          console.log('xsdk is ready')
           wc.emit('adddevices', feignDevices)
         }).on('statuschange', function (status) {
-          console.log('statuschange status = ' + status)
+          console.log('sdk statuschange status = ' + status)
         }).on('devicesready', function (devices) {
           devices.forEach(function (device) {
             device.emit('connect')
             device.on('connect', function () { // connect事件触发表示当前设备实例连接上了云智易服务器。
-              console.log('device connected')
-              device.emit('senddata', '28susjka8sskkakkasls')
             })
             .on('data', function (data) {
               console.log(data)
@@ -100,16 +94,10 @@
             .on('disconnect', function (data) {
               console.log(data)
             })
-            .on('statuschange', function (status) {
-              console.log('device status is ' + status)
-              if (status === 1) {
-                console.log('devices is online')
-              } else {
-                console.log('devices is offline')
+            .on('statuschange', function (status) { // status=1 表示设备在线，status=0表示设备离线
+              if (status === 1) { // 设备在线，可以发动数据控制设备
+                device.emit('senddata', 'QWER')
               }
-            })
-            .on('error', function (error) {
-              console.log(data)
             })
           })
         })

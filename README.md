@@ -36,4 +36,4 @@ sdk.emit('startscan') // sdk扫描设备
 device.emit('connect') // 建立设备连接
 ```
 
-**详细信息请参考 [API 文档](./docs/xlink-jssdk-document.md)**
+**详细信息请参考 [API 文档](./docs/xlink-jssdk接口文档.md)**
