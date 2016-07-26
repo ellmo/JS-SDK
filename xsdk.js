@@ -1,4 +1,14 @@
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else if(typeof exports === 'object')
+		exports["xsdk"] = factory();
+	else
+		root["xsdk"] = factory();
+})(this, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -153,7 +163,8 @@
 
 	var deviceStatus = {
 	  ONLINE: 1, // 设备在线
-	  OFFLINE: 0 // 设备离线
+	  OFFLINE: 0, // 设备离线
+	  ERROR: -1 // 发生错误
 	};
 
 	var SDKType = {
@@ -302,7 +313,9 @@
 
 	var _lang = __webpack_require__(56);
 
-	var _debug = __webpack_require__(57);
+	var _array = __webpack_require__(57);
+
+	var _debug = __webpack_require__(58);
 
 	var _debug2 = _interopRequireDefault(_debug);
 
@@ -529,11 +542,12 @@
 
 	  this._socket.emit('device.connect', params, function (data) {
 	    if (data.status === 200) {
-	      self._fire(_enum.deviceEvent.STATUSCHANGE, _enum.deviceStatus.INLINE);
+	      self._fire(_enum.deviceEvent.STATUSCHANGE, _enum.deviceStatus.ONLINE);
 	    } else if (data.status === 202) {
 	      self._fire(_enum.deviceEvent.STATUSCHANGE, _enum.deviceStatus.OFFLINE);
+	    } else {
+	      self._fire(_enum.deviceEvent.STATUSCHANGE, _enum.deviceStatus.ERROR);
 	    }
-	    self._fire(_enum.deviceEvent.CONNECT);
 	  });
 	}
 
@@ -550,7 +564,7 @@
 
 	// 分发设备数据
 	function _dispatchDeviceData(devices, data) {
-	  var device = devices.find(function (item) {
+	  var device = (0, _array.find)(devices, function (item) {
 	    return item.id === data.deviceid.toString();
 	  });
 
@@ -565,7 +579,7 @@
 
 	// 分发设备状态
 	function _dispatchDeviceStatus(devices, status) {
-	  var device = devices.find(function (item) {
+	  var device = (0, _array.find)(devices, function (item) {
 	    return item.id === status.deviceid.toString();
 	  });
 
@@ -8337,6 +8351,35 @@
 /* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.find = find;
+
+	var _lang = __webpack_require__(56);
+
+	function find(arr, predicate) {
+	  if (!(0, _lang.isArray)(arr)) {
+	    throw new TypeError('arr must be a array');
+	  }
+	  if (typeof predicate !== 'function') {
+	    throw new TypeError('predicate must be a function');
+	  }
+
+	  for (var i = 0; i < arr.length; i++) {
+	    if (predicate(arr[i])) {
+	      return arr[i];
+	    }
+	  }
+	  return undefined;
+	}
+
+/***/ },
+/* 58 */
+/***/ function(module, exports, __webpack_require__) {
+
 	
 	/**
 	 * This is the web browser implementation of `debug()`.
@@ -8344,7 +8387,7 @@
 	 * Expose `debug()` as the module.
 	 */
 
-	exports = module.exports = __webpack_require__(58);
+	exports = module.exports = __webpack_require__(59);
 	exports.log = log;
 	exports.formatArgs = formatArgs;
 	exports.save = save;
@@ -8508,7 +8551,7 @@
 
 
 /***/ },
-/* 58 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -8524,7 +8567,7 @@
 	exports.disable = disable;
 	exports.enable = enable;
 	exports.enabled = enabled;
-	exports.humanize = __webpack_require__(59);
+	exports.humanize = __webpack_require__(60);
 
 	/**
 	 * The currently active debug mode names, and names to skip.
@@ -8711,7 +8754,7 @@
 
 
 /***/ },
-/* 59 */
+/* 60 */
 /***/ function(module, exports) {
 
 	/**
@@ -8842,4 +8885,6 @@
 
 
 /***/ }
-/******/ ]);
+/******/ ])
+});
+;

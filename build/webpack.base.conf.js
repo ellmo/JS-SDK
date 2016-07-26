@@ -7,6 +7,8 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, '../'),
     filename: 'xsdk.js',
+    library: 'xsdk',
+    libraryTarget: 'umd'
   },
   resolve: {
     extensions: ['', '.js']

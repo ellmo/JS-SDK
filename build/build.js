@@ -3,7 +3,8 @@ var webpackProConfig = require('./webpack.prod.conf')
 var webpackBaseConfig = require('./webpack.base.conf')
 
 var webpackConfig = webpackBaseConfig
-if (process.argv[2] === '--compress') {
+
+if (process.argv[2] === 'compress') {
   webpackConfig = webpackProConfig
 }
 
