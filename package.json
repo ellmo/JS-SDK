@@ -1,6 +1,6 @@
 {
   "name": "xlink-jssdk",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "js sdk for h5 developer to connect xlink server",
   "main": "xsdk.js",
   "scripts": {
