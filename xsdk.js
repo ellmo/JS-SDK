@@ -313,9 +313,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lang = __webpack_require__(56);
 
-	var _array = __webpack_require__(57);
-
-	var _debug = __webpack_require__(58);
+	var _debug = __webpack_require__(57);
 
 	var _debug2 = _interopRequireDefault(_debug);
 
@@ -328,17 +326,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    throw new Error("'host' is necessary");
 	  }
 
-	  _initState(xsdk);
-
-	  xsdk._isReady = false;
 	  xsdk._callback = {};
-	  xsdk._socket = _initSocketIO(xsdk, option);
+	  xsdk.host = option.host;
 	  xsdk.devices = [];
 	  xsdk.on = _on;
 	  xsdk.emit = _emit;
+	  xsdk._isReady = true;
 	}
 
-	function _initSocketIO(sdk, option) {
+	function _createSocketIO(device, host) {
 	  log('init socket-io');
 	  // option 参数结构:
 	  // {
@@ -351,62 +347,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	    throw new Error('socket.io do not exsit');
 	  }
 
-	  var _socket = (0, _socket3.default)(option.host);
+	  var _socket = (0, _socket3.default)(host);
 
 	  // 注册socket的状态的监听事件
 	  _socket.on('connect', function () {
-	    sdk._status = _enum.SDKStatus.CONNECT;
+	    log('device ' + device.id + ' socket connected');
 	  }).on('reconnect', function () {
-	    sdk._status = _enum.SDKStatus.CONNECT;
+	    log('device ' + device.id + ' socket reconnect');
 	  }).on('disconnect', function () {
-	    sdk._status = _enum.SDKStatus.DISCONNECT;
+	    log('device ' + device.id + ' socket disconnect');
 	  }).on('reconnect_attempt', function () {
-	    sdk._status = _enum.SDKStatus.CONNECTTING;
+	    log('device ' + device.id + ' socket reconnect_attempt');
 	  }).on('reconnecting', function () {
-	    sdk._status = _enum.SDKStatus.CONNECTTING;
+	    log('device ' + device.id + ' socket reconnect_attempt');
 	  }).on('reconnect_error', function (error) {
-	    _fire(sdk, _enum.SDKEvent.ERROR, error);
+	    log('device ' + device.id + ' socket reconnect_error' + error);
 	  }).on('reconnect_failed', function () {
-	    _fire(sdk, _enum.SDKEvent.ERROR, {});
+	    log('device ' + device.id + ' socket reconnect_failed');
 	  }).on('error', function (error) {
-	    _fire(sdk, _enum.SDKEvent.ERROR, error);
+	    log('device ' + device.id + ' socket error' + error);
 	  }).on('device.onRecvData', function (data) {
-	    _dispatchDeviceData(sdk.devices, data);
+	    _recvDeviceData(device, data);
 	  }).on('device.onState', function (status) {
-	    _dispatchDeviceStatus(sdk.devices, status);
+	    _recvDeviceStatus(device, status);
+	  }).on('device.connect', function (data) {
+	    _recvDeviceConnect(device, data);
 	  });
 
 	  return _socket;
 	}
 
-	// 初始化sdk状态
-	function _initState(sdk) {
-	  Object.defineProperty(sdk, '_status', {
-	    set: function set(status) {
-	      if (this.status !== status) {
-	        _fire(sdk, _enum.SDKEvent.STATUSCHANGE, status);
-	      } else {
-	        return;
-	      }
-
-	      if (status === _enum.SDKStatus.CONNECT && !sdk._isReady) {
-	        _fire(sdk, _enum.SDKEvent.READY);
-	        sdk._isReady = true; // 自动重连不触发sdk ready时间。sdk的ready只触发一次
-	      }
-
-	      this.status = status;
-	    },
-	    get: function get() {
-	      return this.status;
-	    },
-	    enumerable: false,
-	    configurable: false
-	  });
-
-	  sdk.status = _enum.SDKStatus.DISCONNECT;
-	}
-
-	// 分发socket状态和数据
+	// 分发sdk状态和数据
 	function _fire(sdk, event, params) {
 	  switch (event) {
 	    case _enum.SDKEvent.READY:
@@ -443,9 +414,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  switch (event) {
 	    case _enum.SDKEvent.READY:
 	      this._callback[_enum.SDKEvent.READY] = callback;
+	      // 没有其他合适位置触发该方法， 直接调用
+	      if (this._isReady) {
+	        callback();
+	      }
 	      break;
 	    case _enum.SDKEvent.DEVICESREADY:
 	      this._callback[_enum.SDKEvent.DEVICESREADY] = callback;
+	      // 如果设备已经就绪， 直接调用
+	      if (this.devices.length > 0) {
+	        callback(this.devices);
+	      }
 	      break;
 	    case _enum.SDKEvent.STATUSCHANGE:
 	      this._callback[_enum.SDKEvent.STATUSCHANGE] = callback;
@@ -483,7 +462,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  switch (event) {
 	    case _enum.SDKEvent.DESTORY:
-	      this._socket = null;
+	      // 空实现
 	      break;
 	    case _enum.SDKEvent.ADDDEVICES:
 	      _addDevices.call(this, params);
@@ -513,46 +492,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var option = {
 	    id: param.deviceid,
 	    userid: param.userid,
-	    token: param.token,
-	    _socket: this._socket
+	    token: param.token
 	  };
-	  this.devices.push(new _device2.default(option));
+	  var device = new _device2.default(option);
+	  device._socket = _createSocketIO(device, this.host);
+	  this.devices.push(device);
 	}
 
 	// 实现Device类的部分方法
 	function _deviceImp(Device) {
-	  Device.prototype._sendData = _sendData;
-	  Device.prototype._connect = _connect;
-	  Device.prototype._disconnect = _disconnect;
+	  Device.prototype._sendData = _deviceSendData;
+	  Device.prototype._connect = _deviceConnect;
+	  Device.prototype._disconnect = _deviceDisconnect;
 	}
 
 	// 设备发送数据
-	function _sendData(data) {
-	  this._socket.emit('device.senddata', data);
+	function _deviceSendData(data, cb) {
+	  var params = {
+	    appid: this.userid,
+	    data: data.data,
+	    type: data.type,
+	    deviceid: this.id
+	  };
+	  this._socket.emit('device.senddata', params, cb);
 	}
 
 	// 连接设备
-	function _connect() {
-	  var self = this;
+	function _deviceConnect() {
 	  var params = {
 	    deviceid: this.id,
 	    appid: this.userid,
 	    token: this.token
 	  };
 
-	  this._socket.emit('device.connect', params, function (data) {
-	    if (data.status === 200) {
-	      self._fire(_enum.deviceEvent.STATUSCHANGE, _enum.deviceStatus.ONLINE);
-	    } else if (data.status === 202) {
-	      self._fire(_enum.deviceEvent.STATUSCHANGE, _enum.deviceStatus.OFFLINE);
-	    } else {
-	      self._fire(_enum.deviceEvent.STATUSCHANGE, _enum.deviceStatus.ERROR);
-	    }
-	  });
+	  this._socket.emit('device.connect', params);
 	}
 
 	// 断开设备
-	function _disconnect() {
+	function _deviceDisconnect() {
 	  var params = {
 	    deviceid: this.id,
 	    data: ''
@@ -562,13 +539,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	}
 
-	// 分发设备数据
-	function _dispatchDeviceData(devices, data) {
-	  var device = (0, _array.find)(devices, function (item) {
-	    return item.id === data.deviceid.toString();
-	  });
-
+	// 设备设备收到数据
+	function _recvDeviceData(device, data) {
 	  if (device) {
+	    // 去除deviceid字段
 	    var params = {
 	      data: data.data,
 	      type: data.type
@@ -577,15 +551,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	}
 
-	// 分发设备状态
-	function _dispatchDeviceStatus(devices, status) {
-	  var device = (0, _array.find)(devices, function (item) {
-	    return item.id === status.deviceid.toString();
-	  });
-
+	// 设备状态改变
+	function _recvDeviceStatus(device, status) {
 	  if (device) {
 	    device._fire(_enum.deviceEvent.STATUSCHANGE, status.state);
 	  }
+	}
+
+	// 收到设备连接成功消息
+	function _recvDeviceConnect(device, data) {
+	  if (data.status === 200) {
+	    device._fire(_enum.deviceEvent.STATUSCHANGE, _enum.deviceStatus.ONLINE);
+	  } else if (data.status === 202) {
+	    device._fire(_enum.deviceEvent.STATUSCHANGE, _enum.deviceStatus.OFFLINE);
+	  } else {
+	    device._fire(_enum.deviceEvent.STATUSCHANGE, _enum.deviceStatus.ERROR);
+	  }
+	  device._fire(_enum.deviceEvent.CONNECT, data);
 	}
 
 	exports.default = initWebsocket;
@@ -8246,13 +8228,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return this;
 	}
 
-	function _emit(event, data) {
+	function _emit(event, data, cb) {
 	  if (!(0, _lang.isString)(event)) {
 	    throw new TypeError('error params');
 	  }
 	  if (event === _enum.deviceEvent.SENDDATA) {
 	    // 发送数据时，数据项不能为空
-	    if (!(0, _lang.isString)(data)) {
+	    if (!(0, _lang.isString)(data) && !(0, _lang.isPlainObject)(data)) {
+	      throw new TypeError('error params');
+	    }
+
+	    if (cb && !(0, _lang.isFunction)(cb)) {
 	      throw new TypeError('error params');
 	    }
 	  }
@@ -8270,7 +8256,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      break;
 	    case _enum.deviceEvent.SENDDATA:
 	      if (this._sendData) {
-	        this._sendData(data);
+	        this._sendData(data, cb);
 	      }
 	      break;
 	    default:
@@ -8282,7 +8268,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _fire(event, data) {
 	  switch (event) {
 	    case _enum.deviceEvent.CONNECT:
-	      this._callback[_enum.deviceEvent.CONNECT]();
+	      this._callback[_enum.deviceEvent.CONNECT](data);
 	      break;
 	    case _enum.deviceEvent.DISCONNECT:
 	      this._callback[_enum.deviceEvent.DISCONNECT]();
@@ -8351,35 +8337,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.find = find;
-
-	var _lang = __webpack_require__(56);
-
-	function find(arr, predicate) {
-	  if (!(0, _lang.isArray)(arr)) {
-	    throw new TypeError('arr must be a array');
-	  }
-	  if (typeof predicate !== 'function') {
-	    throw new TypeError('predicate must be a function');
-	  }
-
-	  for (var i = 0; i < arr.length; i++) {
-	    if (predicate(arr[i])) {
-	      return arr[i];
-	    }
-	  }
-	  return undefined;
-	}
-
-/***/ },
-/* 58 */
-/***/ function(module, exports, __webpack_require__) {
-
 	
 	/**
 	 * This is the web browser implementation of `debug()`.
@@ -8387,7 +8344,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Expose `debug()` as the module.
 	 */
 
-	exports = module.exports = __webpack_require__(59);
+	exports = module.exports = __webpack_require__(58);
 	exports.log = log;
 	exports.formatArgs = formatArgs;
 	exports.save = save;
@@ -8551,7 +8508,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 59 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -8567,7 +8524,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.disable = disable;
 	exports.enable = enable;
 	exports.enabled = enabled;
-	exports.humanize = __webpack_require__(60);
+	exports.humanize = __webpack_require__(59);
 
 	/**
 	 * The currently active debug mode names, and names to skip.
@@ -8754,7 +8711,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 60 */
+/* 59 */
 /***/ function(module, exports) {
 
 	/**
