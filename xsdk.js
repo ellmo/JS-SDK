@@ -508,13 +508,26 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	// 设备发送数据
 	function _deviceSendData(data, cb) {
-	  var params = {
-	    appid: this.userid,
-	    data: data.data,
-	    type: data.type,
-	    deviceid: this.id
-	  };
-	  this._socket.emit('device.senddata', params, cb);
+	  console.log(data);
+	  var params = null;
+	  if (data.type === 'datapoint') {
+	    params = {
+	      appid: this.userid,
+	      name: data.name || '',
+	      datapoint: data.data
+	    };
+	    // 设置数据端点
+	    this._socket.emit('device.setdata', params, cb);
+	  } else {
+	    params = {
+	      appid: this.userid,
+	      data: data.data,
+	      type: data.type,
+	      deviceid: this.id
+	    };
+	    // 发送透传数据
+	    this._socket.emit('device.senddata', params, cb);
+	  }
 	}
 
 	// 连接设备
@@ -8268,19 +8281,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _fire(event, data) {
 	  switch (event) {
 	    case _enum.deviceEvent.CONNECT:
-	      this._callback[_enum.deviceEvent.CONNECT](data);
+	      if (this._callback[_enum.deviceEvent.CONNECT]) {
+	        this._callback[_enum.deviceEvent.CONNECT](data);
+	      }
 	      break;
 	    case _enum.deviceEvent.DISCONNECT:
-	      this._callback[_enum.deviceEvent.DISCONNECT]();
+	      if (this._callback[_enum.deviceEvent.DISCONNECT]) {
+	        this._callback[_enum.deviceEvent.DISCONNECT]();
+	      }
 	      break;
 	    case _enum.deviceEvent.DATA:
-	      this._callback[_enum.deviceEvent.DATA](data);
+	      if (this._callback[_enum.deviceEvent.DATA]) {
+	        this._callback[_enum.deviceEvent.DATA](data);
+	      }
 	      break;
 	    case _enum.deviceEvent.STATUSCHANGE:
-	      this._callback[_enum.deviceEvent.STATUSCHANGE](data);
+	      if (this._callback[_enum.deviceEvent.STATUSCHANGE]) {
+	        this._callback[_enum.deviceEvent.STATUSCHANGE](data);
+	      }
 	      break;
 	    case _enum.deviceEvent.ERROR:
-	      this._callback[_enum.deviceEvent.ERROR](data);
+	      if (this._callback[_enum.deviceEvent.ERROR]) {
+	        this._callback[_enum.deviceEvent.ERROR](data);
+	      }
 	      break;
 	    default:
 	      console.warn(event + 'is not support');
