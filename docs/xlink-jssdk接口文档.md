@@ -102,7 +102,13 @@ ws.on('ready', function () {
         // 添加设备监听
         item.on('connect', function (msg) {
             // msg 表示连接成功的描述
-            item.emit('senddata', '')
+            // item.emit('senddata', '透传数据')
+            item.emit('senddata', { // 数据端点数据
+                type: 'datapoint',
+                data: [{
+                    '0': "value of index '0'" // key 表示数据端点索引， value表示索引值
+                }, ...]
+            })
             item.emit('disconnect')
         })
         .on('data', function (data) {
@@ -213,7 +219,7 @@ Device类表示设备。每一个Device实例根据设备id(device_id)唯一标�
 | 参数 | 类型 | 是否必须 | 描述 |
 | --- | --- | --- | --- |
 | event | String | 是 | 支持的发送事件有 ['connect'](#CONNECT) ['disconnect'](#DISCONNECT) ['senddata'](#SENDDATA) ['setdatapoint'](#SETDATAPOINT)|
-| data | String | 仅在event为['senddata'](#SENDDATA)时添加 | 发送的指令内容 |
+| data | String 或 Object | 仅在event为['senddata'](#SENDDATA)时添加 | 发送的指令内容 |
 
 ####<a name = 'deviceon'>on参数</a>
 | 参数 | 类型 | 是否必须 | 描述 |
