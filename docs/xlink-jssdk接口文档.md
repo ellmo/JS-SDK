@@ -218,7 +218,7 @@ Device类表示设备。每一个Device实例根据设备id(device_id)唯一标�
 
 | 参数 | 类型 | 是否必须 | 描述 |
 | --- | --- | --- | --- |
-| event | String | 是 | 支持的发送事件有 ['connect'](#CONNECT) ['disconnect'](#DISCONNECT) ['senddata'](#SENDDATA) ['setdatapoint'](#SETDATAPOINT)|
+| event | String | 是 | 支持的发送事件有 ['connect'](#CONNECT) ['disconnect'](#DISCONNECT) ['senddata'](#SENDDATA)|
 | data | String 或 Object | 仅在event为['senddata'](#SENDDATA)时添加 | 发送的指令内容 |
 
 ####<a name = 'deviceon'>on参数</a>
@@ -237,7 +237,6 @@ Device类表示设备。每一个Device实例根据设备id(device_id)唯一标�
 | --- | --- |
 | <a name='CONNECT'>connect</a> | 连接设备 |
 | <a name='DISCONNECT'>disconnect</a> | 断开设备连接 |
-| <a name='SETDATAPOINT'>setdatapoint</a> | 设置设备[数据端点](#datapoint) |
 | <a name='DATA'>data</a> | 设备数据更新，事件触发时会将设备数据传入回调函数 |
 | <a name='SUBSCRIBE'>subscribe</a> | 订阅设备 |
 | <a name='UNSUBSCRIBE'>unsubscribe</a> | 取消订阅设备 |
