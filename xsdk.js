@@ -508,7 +508,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	// 设备发送数据
 	function _deviceSendData(data, cb) {
-	  console.log(data);
 	  var params = null;
 	  if (data.type === 'datapoint') {
 	    params = {
@@ -521,7 +520,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  } else {
 	    params = {
 	      appid: this.userid,
-	      data: data.data,
+	      data: data,
 	      type: data.type,
 	      deviceid: this.id
 	    };
