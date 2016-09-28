@@ -313,9 +313,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lang = __webpack_require__(56);
 
-	var _debug = __webpack_require__(57);
+	var _array = __webpack_require__(57);
+
+	var _array2 = _interopRequireDefault(_array);
+
+	var _debug = __webpack_require__(58);
 
 	var _debug2 = _interopRequireDefault(_debug);
+
+	var _base = __webpack_require__(61);
+
+	var _base2 = _interopRequireDefault(_base);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -496,6 +504,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	  var device = new _device2.default(option);
 	  device._socket = _createSocketIO(device, this.host);
+	  device._sdk = this;
 	  this.devices.push(device);
 	}
 
@@ -509,7 +518,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	// 设备发送数据
 	function _deviceSendData(data, cb) {
 	  var params = null;
-	  if (data.type === 'datapoint') {
+	  if ((0, _lang.isPlainObject)(data) && data.type === 'datapoint') {
+	    // 设置数据端点
 	    params = {
 	      appid: this.userid,
 	      name: data.name || '',
@@ -518,12 +528,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // 设置数据端点
 	    this._socket.emit('device.setdata', params, cb);
 	  } else {
+	    // 发送透传字符串
 	    params = {
 	      appid: this.userid,
-	      data: data,
-	      type: data.type,
 	      deviceid: this.id
 	    };
+	    if ((0, _lang.isString)(data)) {
+	      params.data = data;
+	    } else if ((0, _lang.isArray)(data)) {
+	      params.data = _base2.default.encode(data);
+	    } else {
+	      return;
+	    }
+
 	    // 发送透传数据
 	    this._socket.emit('device.senddata', params, cb);
 	  }
@@ -542,12 +559,24 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	// 断开设备
 	function _deviceDisconnect() {
+	  var self = this;
 	  var params = {
 	    deviceid: this.id,
 	    data: ''
 	  };
+	  // 断开设备连接
 	  this._socket.emit('device.disconnect', params, function () {
 	    this._fire(_enum.deviceEvent.DISCONNECT);
+	  });
+
+	  // 断开socket.io连接
+	  this._socket.emit('disconnect', params, function () {
+	    this._fire(_enum.deviceEvent.DISCONNECT);
+	  });
+
+	  // 从sdk设备列表中删除对象
+	  _array2.default.remove(this._sdk.devices, function (item) {
+	    item.id = self.id;
 	  });
 	}
 
@@ -559,6 +588,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      data: data.data,
 	      type: data.type
 	    };
+
+	    if (data.type === 'base64') {
+	      var decodedArr = _base2.default.decode(data.data);
+	      device._fire(_enum.deviceEvent.DATA, params, decodedArr);
+	      return;
+	    }
 	    device._fire(_enum.deviceEvent.DATA, params);
 	  }
 	}
@@ -8211,31 +8246,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lang = __webpack_require__(56);
 
-	function _on(event, calback) {
-	  if (!((0, _lang.isString)(event) && (0, _lang.isFunction)(calback))) {
+	function _on(event, callback) {
+	  if (!((0, _lang.isString)(event) && (0, _lang.isFunction)(callback))) {
 	    throw new TypeError('error params');
 	  }
 
-	  switch (event) {
-	    case _enum.deviceEvent.CONNECT:
-	      this._callback[_enum.deviceEvent.CONNECT] = calback;
-	      break;
-	    case _enum.deviceEvent.DISCONNECT:
-	      this._callback[_enum.deviceEvent.DISCONNECT] = calback;
-	      break;
-	    case _enum.deviceEvent.STATUSCHANGE:
-	      this._callback[_enum.deviceEvent.STATUSCHANGE] = calback;
-	      break;
-	    case _enum.deviceEvent.DATA:
-	      this._callback[_enum.deviceEvent.DATA] = calback;
-	      break;
-	    case _enum.deviceEvent.ERROR:
-	      this._callback[_enum.deviceEvent.ERROR] = calback;
-	      break;
-	    default:
-	      console.warn('event: ' + event + 'is not support');
-	      break;
+	  if (!this._callbacks[event]) {
+	    this._callbacks[event] = [];
 	  }
+
+	  this._callbacks[event].push(callback);
 
 	  return this;
 	}
@@ -8246,7 +8266,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	  if (event === _enum.deviceEvent.SENDDATA) {
 	    // 发送数据时，数据项不能为空
-	    if (!(0, _lang.isString)(data) && !(0, _lang.isPlainObject)(data)) {
+	    if (!(0, _lang.isString)(data) && !(0, _lang.isPlainObject)(data) && !(0, _lang.isArray)(data)) {
 	      throw new TypeError('error params');
 	    }
 
@@ -8277,36 +8297,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	}
 
-	function _fire(event, data) {
-	  switch (event) {
-	    case _enum.deviceEvent.CONNECT:
-	      if (this._callback[_enum.deviceEvent.CONNECT]) {
-	        this._callback[_enum.deviceEvent.CONNECT](data);
-	      }
-	      break;
-	    case _enum.deviceEvent.DISCONNECT:
-	      if (this._callback[_enum.deviceEvent.DISCONNECT]) {
-	        this._callback[_enum.deviceEvent.DISCONNECT]();
-	      }
-	      break;
-	    case _enum.deviceEvent.DATA:
-	      if (this._callback[_enum.deviceEvent.DATA]) {
-	        this._callback[_enum.deviceEvent.DATA](data);
-	      }
-	      break;
-	    case _enum.deviceEvent.STATUSCHANGE:
-	      if (this._callback[_enum.deviceEvent.STATUSCHANGE]) {
-	        this._callback[_enum.deviceEvent.STATUSCHANGE](data);
-	      }
-	      break;
-	    case _enum.deviceEvent.ERROR:
-	      if (this._callback[_enum.deviceEvent.ERROR]) {
-	        this._callback[_enum.deviceEvent.ERROR](data);
-	      }
-	      break;
-	    default:
-	      console.warn(event + 'is not support');
-	      break;
+	function _fire(event) {
+	  var args = Array.prototype.slice.call(arguments, 1);
+	  if (this._callbacks[event]) {
+	    this._callbacks[event].forEach(function (fn) {
+	      fn.apply(null, args);
+	    });
 	  }
 	}
 
@@ -8314,7 +8310,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  for (var prop in option) {
 	    this[prop] = option[prop];
 	  }
-	  this._callback = {};
+	  this._callbacks = {};
 	}
 
 	Device.prototype._sendData = null;
@@ -8359,6 +8355,57 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _lang = __webpack_require__(56);
+
+	function find(arr, predicate) {
+	  if (!(0, _lang.isArray)(arr)) {
+	    throw new TypeError('arr must be a array');
+	  }
+	  if (typeof predicate !== 'function') {
+	    throw new TypeError('predicate must be a function');
+	  }
+
+	  for (var i = 0; i < arr.length; i++) {
+	    if (predicate(arr[i])) {
+	      return arr[i];
+	    }
+	  }
+	  return undefined;
+	}
+
+	function remove(arr, predicate) {
+	  if (!(0, _lang.isArray)(arr)) {
+	    throw new TypeError('arr must be a array');
+	  }
+	  if (typeof predicate !== 'function') {
+	    throw new TypeError('predicate must be a function');
+	  }
+
+	  var deleted = [];
+	  for (var i = 0; i < arr.length; i++) {
+	    if (predicate(arr[i])) {
+	      deleted.push(arr.splice(i, 1));
+	    }
+	  }
+	  return deleted;
+	}
+
+	var _ = {
+	  find: find,
+	  remove: remove
+	};
+	exports.default = _;
+
+/***/ },
+/* 58 */
+/***/ function(module, exports, __webpack_require__) {
+
 	
 	/**
 	 * This is the web browser implementation of `debug()`.
@@ -8366,7 +8413,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Expose `debug()` as the module.
 	 */
 
-	exports = module.exports = __webpack_require__(58);
+	exports = module.exports = __webpack_require__(59);
 	exports.log = log;
 	exports.formatArgs = formatArgs;
 	exports.save = save;
@@ -8530,7 +8577,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 58 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -8546,7 +8593,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.disable = disable;
 	exports.enable = enable;
 	exports.enabled = enabled;
-	exports.humanize = __webpack_require__(59);
+	exports.humanize = __webpack_require__(60);
 
 	/**
 	 * The currently active debug mode names, and names to skip.
@@ -8733,7 +8780,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 59 */
+/* 60 */
 /***/ function(module, exports) {
 
 	/**
@@ -8862,6 +8909,90 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return Math.ceil(ms / n) + ' ' + name + 's';
 	}
 
+
+/***/ },
+/* 61 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	//去除换行
+	function ClearBr(key) {
+	  key = key.replace(/<\/?.+?>/g, '');
+	  key = key.replace(/[\r\n]/g, '');
+	  key = key.replace(/[\n]/g, '');
+	  return key;
+	}
+
+	function decodeBase64(strIn) {
+	  strIn = ClearBr(strIn);
+	  if (!strIn.length || strIn.length % 4) {
+	    return null;
+	  }
+	  if (!strIn.length) {
+	    return null;
+	  }
+	  var str64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+	  var index64 = [];
+	  for (var j = 0; j < str64.length; j++) {
+	    index64[str64.charAt(j)] = j;
+	  }
+	  var c0, c1, c2, c3, b0, b1, b2;
+	  var len = strIn.length;
+	  var len1 = len;
+	  if (strIn.charAt(len - 1) === '=') {
+	    len1 -= 4;
+	  }
+	  var result = [];
+	  for (var i = 0; i < len1; i += 4) {
+	    c0 = index64[strIn.charAt(i)];
+	    c1 = index64[strIn.charAt(i + 1)];
+	    c2 = index64[strIn.charAt(i + 2)];
+	    c3 = index64[strIn.charAt(i + 3)];
+	    b0 = c0 << 2 | c1 >> 4;
+	    b1 = c1 << 4 | c2 >> 2;
+	    b2 = c2 << 6 | c3;
+	    result.push(b0 & 0xff);
+	    result.push(b1 & 0xff);
+	    result.push(b2 & 0xff);
+	  }
+	  if (len1 !== len) {
+	    c0 = index64[strIn.charAt(i)];
+	    c1 = index64[strIn.charAt(i + 1)];
+	    c2 = strIn.charAt(i + 2);
+	    b0 = c0 << 2 | c1 >> 4;
+	    result.push(b0 & 0xff);
+	    if (c2 !== '=') {
+	      c2 = index64[c2];
+	      b1 = c1 << 4 | c2 >> 2;
+	      result.push(b1 & 0xff);
+	    }
+	  }
+	  /* **********将数据转成16进制 start***********/
+	  var arr = result;
+	  var newArr = arr.map(function (item) {
+	    var centeritem = item.toString(16);
+	    return centeritem.length > 1 ? centeritem : '0' + centeritem;
+	  });
+	  result = newArr;
+	  /* ***********将数据转成16进制 end***************/
+	  return result;
+	}
+
+	function encode(data) {
+	  var str = String.fromCharCode.apply(null, data); // 先转换为二进制
+	  return window.btoa(str).replace(/.{76}(?=.)/g, '$&\n');
+	}
+
+	var base64 = {
+	  encode: encode,
+	  decode: decodeBase64
+	};
+
+	exports.default = base64;
 
 /***/ }
 /******/ ])
